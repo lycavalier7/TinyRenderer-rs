@@ -1,3 +1,6 @@
+use std::fs::File;
+use std::io::{Write, BufWriter};
+
 #[derive(Debug, Clone)]
 pub struct Image {
     pub width: usize,
@@ -26,4 +29,27 @@ impl Image {
         return self.data[idx];
     }
 
+    pub fn save_as_pgm(&self, path: &str)->std::io::Result<()> {
+        assert_eq!(self.data.len(), self.width * self.height);
+
+        let file = File::create(path)?;
+        let mut writer = BufWriter::new(file);
+
+        writeln!(writer, "P2")?;
+        writeln!(writer, "{} {}", self.width, self.height)?;
+        writeln!(writer, "255")?;
+
+        for row in self.data.chunks(self.width) {
+            for (i, &pixel) in row.iter().enumerate() {
+                if i > 0 {
+                    write!(writer, " ")?;
+                }
+                write!(writer, "{pixel}")?;
+            }
+            writeln!(writer)?;
+        }
+
+        writer.flush()?;
+        Ok(())
+    }
 }

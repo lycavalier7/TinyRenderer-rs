@@ -1,7 +1,7 @@
 use crate::image::Image;
 use crate::geometry::Vec2;
 
-fn line(x0: i32, y0: i32, x1: i32, y1: i32, image: &mut Image, color: u8) {
+pub fn line(x0: i32, y0: i32, x1: i32, y1: i32, image: &mut Image, color: u8) {
     if x0 == x1 && y0 == y1 {
         image.set(x0, y0, color);
         return;
@@ -24,7 +24,7 @@ fn line(x0: i32, y0: i32, x1: i32, y1: i32, image: &mut Image, color: u8) {
         std::mem::swap(&mut y0, &mut y1);
     }
 
-    let dx = (x1 - x0);
+    let dx = x1 - x0;
     let dy = (y1 - y0).abs();
 
     let mut error2 = 0;
