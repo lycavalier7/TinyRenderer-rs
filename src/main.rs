@@ -12,7 +12,7 @@ fn main() {
 
     let mut image = image::Image::new(width, height);
 
-    raster::line(x0, y0, x1, y1, &mut image, 128);
+    raster::line(x0, y0, x1, y1, &mut image, image::Color{r: 32, g: 64, b: 128, a: 255});
 
-    image.save_as_pgm("output.pgm").expect("Failed to save image");
+    image.save_as_ppm("output\\output.ppm").expect("Failed to save image");
 }
