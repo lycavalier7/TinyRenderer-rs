@@ -1,27 +1,84 @@
+use std::ops::{Add, Sub, Mul, Div};
+
+// ===============================================================================================
 #[derive(Debug, Clone, Copy)]
-pub struct Vec2
+pub struct Vec2<T>
 {
-    x: f32,
-    y: f32
+    pub x: T,
+    pub y: T
 }
 
-impl Vec2 {
-    fn new(x :f32, y:f32)->Self { Self { x, y } }
-    fn add(self, other: Self)->Self {
-        Self::new(self.x + other.x, self.y + other.y)
+impl<T> Vec2<T> {
+    pub fn new(x :T, y:T)->Self { Self { x, y } }
+}
+
+impl<T> Add for Vec2<T>
+where
+    T: Add<Output = T>,
+{
+    type Output = Self;
+
+    fn add(self, rhs: Self)->Self::Output {
+        Self{ x: self.x + rhs.x, y: self.y + rhs.y}
     }
-    fn sub(self, other: Self)->Self {
-        Self::new(self.x - other.x, self.y - other.y)
+}
+
+impl<T> Sub for Vec2<T>
+where
+    T: Sub<Output = T>,
+{
+    type Output = Self;
+
+    fn sub(self, rhs: Self)->Self::Output {
+        Self{ x: self.x - rhs.x, y: self.y - rhs.y}
     }
-    fn dot(self, other:Self) -> f32 {
-        self.x * other.x + self.y * other.y
+}
+
+impl<T> Mul<T> for Vec2<T>
+where
+    T: Mul<Output = T> + Copy + Clone,
+{
+    type Output = Self;
+
+    fn mul(self, rhs: T)->Self::Output {
+        Self{ x: self.x * rhs, y: self.y * rhs}
     }
-    fn mul_scalar(self, k: f32)->Self {
-        Self::new(self.x * k, self.y * k)
+}
+
+impl<T> Div<T> for Vec2<T>
+where
+    T: Div<Output = T> + Copy + Clone,
+{
+    type Output = Self;
+
+    fn div(self, rhs: T)->Self::Output {
+        Self{ x: self.x / rhs, y: self.y / rhs}
     }
+}
+
+impl<T> Vec2<T>
+where
+    T: Mul<Output = T> + Add<Output = T>,
+{
+    fn dot(self, rhs: Self) -> T {
+        self.x * rhs.x + self.y * rhs.y
+    }
+}
+
+impl<T> Vec2<T>
+where
+    T: Mul<Output = T> + Sub<Output = T>,
+{
+    fn cross(self, rhs: Self) -> T {
+        self.x * rhs.y - self.y * rhs.x
+    }
+}
+
+impl Vec2<f32> {
     fn length(self) -> f32 {
         self.dot(self).sqrt()
     }
+
     fn normalize(self) -> Self {
         let len = self.length();
         if len <= f32::EPSILON {
@@ -31,41 +88,94 @@ impl Vec2 {
             Self::new(self.x / len, self.y / len)
         }
     }
-    fn cross(self, other: Self) -> f32 {
-        self.x * other.y - self.y * other.x
-    }
 }
 
+pub type Vec2i = Vec2<i32>;
+
+// ===============================================================================================
 #[derive(Debug, Clone, Copy)]
-struct Vec3
+struct Vec3<T>
 {
-    x : f32,
-    y : f32,
-    z : f32
+    x : T,
+    y : T,
+    z : T
 }
 
-impl Vec3 {
-    fn new(x : f32, y : f32, z : f32) ->Self  {
-        Self{ x, y, z }
+impl<T> Vec3<T> {
+    fn new(x: T, y: T, z: T)->Self {
+        Self { x, y, z}
     }
-    fn add(self, other: Self)->Self {
-        Self::new(self.x + other.x, self.y + other.y, self.z + other.z)
+}
+
+impl<T> Add for Vec3<T>
+where
+    T: Add<Output = T>,
+{
+    type Output = Self;
+
+    fn add(self, rhs: Self)->Self {
+        Self::new(self.x + rhs.x, self.y + rhs.y, self.z + rhs.z)
     }
-    fn sub(self, other: Self)->Self {
-        Self::new(self.x - other.x, self.y - other.y, self.z - other.z)
+}
+
+impl<T> Sub for Vec3<T>
+where
+    T: Sub<Output = T>,
+{
+    type Output = Self;
+
+    fn sub(self, rhs: Self)->Self {
+        Self::new(self.x - rhs.x, self.y - rhs.y, self.z - rhs.z)
     }
-    fn dot(self, other:Self)->f32 {
-        self.x * other.x + self.y * other.y + self.z * other.z
+}
+
+impl<T> Mul<T> for Vec3<T>
+where
+    T: Mul<Output = T> + Copy + Clone,
+{
+    type Output = Self;
+
+    fn mul(self, rhs: T)->Self::Output {
+        Self::new(self.x * rhs, self.y * rhs, self.z * rhs)
     }
-    fn cross(self, other: Self)->Self {
-        Self::new(self.y * other.z - self.z * other.y, self.z * other.x - self.x * other.z, self.x * other.y - self.y * other.x)
+}
+
+impl<T> Div<T> for Vec3<T>
+where
+    T: Div<Output = T> + Copy + Clone,
+{
+    type Output = Self;
+
+    fn div(self, rhs: T)->Self::Output {
+        Self{ x: self.x / rhs, y: self.y / rhs, z: self.z / rhs}
     }
-    fn mul_scalar(self, k: f32)->Self {
-        Self::new(self.x * k, self.y * k, self.z * k)
+}
+
+impl<T> Vec3<T>
+where
+    T: Mul<Output = T> + Add<Output = T> + Copy + Clone,
+{
+    fn dot(self, rhs: Self) -> T {
+        self.x * rhs.x + self.y * rhs.y + self.z * rhs.z
     }
+}
+
+impl<T> Vec3<T>
+where
+    T: Mul<Output = T> + Sub<Output = T> + Copy + Clone,
+{
+    fn cross(self, rhs: Self) -> Self {
+        Self::new(self.y * rhs.z - self.z * rhs.y,
+                  self.z * rhs.x - self.x * rhs.z,
+                  self.x * rhs.y - self.y * rhs.x)
+    }
+}
+
+impl Vec3<f32> {
     fn length(self) -> f32 {
         self.dot(self).sqrt()
     }
+
     fn normalize(self) -> Self {
         let len = self.length();
         if len <= f32::EPSILON {
