@@ -154,3 +154,9 @@ mod tests {
         assert_eq!(colored_points(&image, color), vec![(0, 2), (1, 2), (2, 2)]);
     }
 }
+
+pub fn triangle_wireframe(p0: Vec2i, p1: Vec2i, p2: Vec2i, image: &mut Image, color: &Color) {
+    line(p0, p1, image, *color);
+    line(p1, p2, image, *color);
+    line(p2, p0, image, *color);
+}
