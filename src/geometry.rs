@@ -69,7 +69,7 @@ impl<T> Vec2<T>
 where
     T: Mul<Output = T> + Sub<Output = T>,
 {
-    fn cross(self, rhs: Self) -> T {
+    pub fn cross(self, rhs: Self) -> T {
         self.x * rhs.y - self.y * rhs.x
     }
 }

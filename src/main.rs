@@ -14,6 +14,6 @@ fn main() {
     let p1 = Vec2i::new(50, 10);
     let p2 = Vec2i::new(80, 80);
 
-    raster::triangle(p0, p1, p2, &mut image, &image::Color{r: 0, g: 0, b: 255, a: 255});
+    raster::triangle(p0, p1, p2, &mut image, &image::Color{r: 255, g: 0, b: 255, a: 255});
     image.save_as_ppm("output\\output.ppm").expect("Failed to save image");
 }
