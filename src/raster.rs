@@ -155,8 +155,54 @@ mod tests {
     }
 }
 
-pub fn triangle_wireframe(p0: Vec2i, p1: Vec2i, p2: Vec2i, image: &mut Image, color: &Color) {
-    line(p0, p1, image, *color);
-    line(p1, p2, image, *color);
-    line(p2, p0, image, *color);
+pub fn triangle(p0: Vec2i, p1: Vec2i, p2: Vec2i, image: &mut Image, color: &Color) {
+    let mut x0 = p0.x;
+    let mut y0 = p0.y;
+    let mut x1 = p1.x;
+    let mut y1 = p1.y;
+    let mut x2 = p2.x;
+    let mut y2 = p2.y;
+
+    if y0 > y1 {
+        std::mem::swap(&mut x0, &mut x1);
+        std::mem::swap(&mut y0, &mut y1);
+    }
+
+    if y0 > y2 {
+        std::mem::swap(&mut x0, &mut x2);
+        std::mem::swap(&mut y0, &mut y2);
+    }
+
+    if y1 > y2 {
+        std::mem::swap(&mut x1, &mut x2);
+        std::mem::swap(&mut y1, &mut y2);
+    }
+
+    if y0 != y1 {
+        let total_height = y2 - y0;
+        let segment_height = y1 - y0;
+
+        for y in y0..y1 {
+            let x_left = x0 + (y - y0) * (x2 - x0) /  total_height;
+            let x_right = x0 + (y - y0) * (x1 - x0) / segment_height;
+
+            for x in std::cmp::min(x_left, x_right)..std::cmp::max(x_left, x_right) {
+                image.set(x, y, *color);
+            }
+        }
+    }
+
+    if y1 != y2 {
+        let total_height = y2 - y0;
+        let segment_height = y2 - y1;
+
+        for y in y1..y2 {
+            let x_left = x0 + (y - y0) * (x2 - x0) /  total_height;
+            let x_right = x1 + (y - y1) * (x2 - x1) / segment_height;
+
+            for x in std::cmp::min(x_left, x_right)..std::cmp::max(x_left, x_right) {
+                image.set(x, y, *color);
+            }
+        }
+    }
 }
