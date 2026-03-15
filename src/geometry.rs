@@ -94,15 +94,15 @@ pub type Vec2i = Vec2<i32>;
 
 // ===============================================================================================
 #[derive(Debug, Clone, Copy)]
-struct Vec3<T>
+pub struct Vec3<T>
 {
-    x : T,
-    y : T,
-    z : T
+    pub x : T,
+    pub y : T,
+    pub z : T
 }
 
 impl<T> Vec3<T> {
-    fn new(x: T, y: T, z: T)->Self {
+    pub fn new(x: T, y: T, z: T)->Self {
         Self { x, y, z}
     }
 }
@@ -185,3 +185,6 @@ impl Vec3<f32> {
         }
     }
 }
+
+pub type Vec3i = Vec3<i32>;
+pub type Vec3f = Vec3<f32>;
