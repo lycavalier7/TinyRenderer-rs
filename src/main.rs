@@ -4,6 +4,7 @@ use crate::image::{Color, Image};
 mod geometry;
 mod image;
 mod raster;
+mod model;
 
 fn viewport(p: Vec3f, w: usize, h: usize) -> Vec3i {
     Vec3i::new(
