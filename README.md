@@ -1,17 +1,46 @@
 # TinyRenderer-rs
 
-This repository is a Rust implementation of the TinyRenderer learning project.
+A Rust learning implementation of the TinyRenderer software rendering pipeline.
 
-Original TinyRenderer project:
+Original TinyRenderer:
 - https://haqr.eu/tinyrenderer/
 
-## Goal
+## Current Progress
 
-Use Rust to rebuild core software rendering steps from scratch, including:
-- vector/math foundations
-- line and triangle rasterization
-- visibility and shading pipeline (incremental)
+This project currently renders an OBJ model with a basic flat-shading pipeline.
 
-## Status
+Implemented:
+- Generic vector math (`Vec2`, `Vec3`) with core operations
+- Line rasterization (Bresenham-style)
+- Triangle rasterization with barycentric coordinates
+- Z-buffer based hidden surface removal (`smaller z` wins)
+- OBJ parsing for `v` and triangle `f` (supports tokens like `v/vt/vn`, currently uses only vertex index)
+- Flat Lambert lighting (face normal + directional light)
+- Grayscale color output in RGBA (`R=G=B`)
+- Unit tests for model parsing, line/triangle rasterization, and Lambert math helpers
 
-This project is developed step by step for learning and code review practice.
+## Current Limitations
+
+- `main` currently writes PPM files (`output/output.ppm`, `output/depth_output.ppm`)
+- Full OBJ support is not finished yet (`vt`, `vn`, non-triangle faces, negative indices, etc.)
+- Shading is flat per-face only (no Gouraud/Phong interpolation yet)
+
+## Run
+
+```bash
+cargo run
+```
+
+```bash
+cargo test
+```
+
+## Output Preview
+
+Rendered result:
+
+![Flat Shading Output](output/output.png)
+
+Depth visualization:
+
+![Depth Output](output/depth_output.png)
