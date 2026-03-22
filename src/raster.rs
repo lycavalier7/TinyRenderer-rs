@@ -1,6 +1,6 @@
 use crate::image::Image;
 use crate::image::Color;
-use crate::geometry::Vec2i;
+use crate::geometry::{Vec2i, Vec3f};
 use crate::geometry::Vec3i;
 
 pub fn line(point0: Vec2i, point1: Vec2i, image: &mut Image, color: Color) {
@@ -49,7 +49,49 @@ pub fn line(point0: Vec2i, point1: Vec2i, image: &mut Image, color: Color) {
     }
 }
 
-pub fn triangle(p0: Vec3i, p1: Vec3i, p2: Vec3i, depth_buffer: &mut Image, framebuffer: &mut Image, color: &Color) {
+fn face_normal(
+    v0: Vec3f,
+    v1: Vec3f,
+    v2: Vec3f,
+    n0: Option<Vec3f>,
+    n1: Option<Vec3f>,
+    n2: Option<Vec3f>,
+    bary: (f32, f32, f32)
+   ) -> Vec3f {
+    match (n0, n1, n2) {
+        (Some(n0), Some(n1), Some(n2)) => {
+            let (alpha, beta, gamma) = bary;
+            (n0 * alpha + n1 * beta + n2 * gamma).normalize()
+        }
+        _ => {
+            (v1 - v0).cross(v2 - v0).normalize()
+        }
+    }
+}
+
+fn lambert_intensity(normal: Vec3f, light_dir: Vec3f) -> f32 {
+    normal.normalize().dot(light_dir.normalize()).max(0.0)
+}
+
+fn shade_from_intensity(intensity: f32) -> Color {
+    let i = (intensity * 255.0) as u8;
+    Color{r: i, g : i, b: i, a: 255}
+}
+
+pub fn triangle(
+    p0: Vec3i,
+    p1: Vec3i,
+    p2: Vec3i,
+    v0: Vec3f,
+    v1: Vec3f,
+    v2: Vec3f,
+    n0: Option<Vec3f>,
+    n1: Option<Vec3f>,
+    n2: Option<Vec3f>,
+    light_dir: Vec3f,
+    depth_buffer: &mut Image,
+    framebuffer: &mut Image,
+) {
     if framebuffer.width == 0 || framebuffer.height == 0 {
         return;
     }
@@ -91,7 +133,18 @@ pub fn triangle(p0: Vec3i, p1: Vec3i, p2: Vec3i, depth_buffer: &mut Image, frame
             };
 
             if inside && cull == false{
-                framebuffer.set(p.x, p.y, *color);
+                let bary = (
+                    alpha as f32 / area as f32,
+                    beta as f32 / area as f32,
+                    gamma as f32 / area as f32,
+                );
+                let normal = face_normal(v0, v1, v2, n0, n1, n2, bary);
+                let intensity = lambert_intensity(normal, light_dir);
+                if intensity <= f32::EPSILON {
+                    continue;
+                }
+                let color = shade_from_intensity(intensity);
+                framebuffer.set(p.x, p.y, color);
                 depth_buffer.set(p.x, p.y, Color{r: z as u8, g: z as u8, b: z as u8, a: 255});
             }
         }
@@ -101,6 +154,10 @@ pub fn triangle(p0: Vec3i, p1: Vec3i, p2: Vec3i, depth_buffer: &mut Image, frame
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    fn approx_eq(a: f32, b: f32, eps: f32) -> bool {
+        (a - b).abs() <= eps
+    }
 
     fn colored_points(image: &Image, color: Color) -> Vec<(i32, i32)> {
         let mut pts = Vec::new();
@@ -116,6 +173,34 @@ mod tests {
             }
         }
         pts
+    }
+
+    #[test]
+    fn face_normal_direction_and_length_are_correct() {
+        let v0 = Vec3f::new(0.0, 0.0, 0.0);
+        let v1 = Vec3f::new(1.0, 0.0, 0.0);
+        let v2 = Vec3f::new(0.0, 1.0, 0.0);
+
+        let n = face_normal(v0, v1, v2, None, None, None, (1.0, 0.0, 0.0));
+        let n_norm = n.normalize();
+
+        assert!(approx_eq(n_norm.x, 0.0, 1e-6));
+        assert!(approx_eq(n_norm.y, 0.0, 1e-6));
+        assert!(approx_eq(n_norm.z, 1.0, 1e-6));
+        assert!(approx_eq(n_norm.dot(n_norm), 1.0, 1e-6));
+    }
+
+    #[test]
+    fn lambert_intensity_parallel_perpendicular_opposite() {
+        let n = Vec3f::new(0.0, 0.0, 1.0);
+
+        let parallel = lambert_intensity(n, Vec3f::new(0.0, 0.0, 3.0));
+        let perpendicular = lambert_intensity(n, Vec3f::new(1.0, 0.0, 0.0));
+        let opposite = lambert_intensity(n, Vec3f::new(0.0, 0.0, -2.0));
+
+        assert!(approx_eq(parallel, 1.0, 1e-6));
+        assert!(approx_eq(perpendicular, 0.0, 1e-6));
+        assert!(approx_eq(opposite, 0.0, 1e-6));
     }
 
     #[test]
@@ -208,14 +293,19 @@ mod tests {
     fn triangle_filled_draws_pixels_inside_bbox() {
         let mut image = Image::new(16, 16);
         let mut depth = Image::new(16, 16);
-        let color = Color { r: 10, g: 200, b: 10, a: 255 };
         let p0 = Vec3i::new(2, 2, -1);
         let p1 = Vec3i::new(12, 2, -1);
         let p2 = Vec3i::new(4, 10, -1);
+        let v0 = Vec3f::new(0.0, 0.0, 0.0);
+        let v1 = Vec3f::new(1.0, 0.0, 0.0);
+        let v2 = Vec3f::new(0.0, 1.0, 0.0);
+        let n = Some(Vec3f::new(0.0, 0.0, 1.0));
+        let light = Vec3f::new(0.0, 0.0, 1.0);
+        let lit = Color { r: 255, g: 255, b: 255, a: 255 };
 
-        triangle(p0, p1, p2, &mut depth, &mut image, &color);
+        triangle(p0, p1, p2, v0, v1, v2, n, n, n, light, &mut depth, &mut image);
 
-        let pts = colored_points(&image, color);
+        let pts = colored_points(&image, lit);
         assert!(!pts.is_empty());
         assert!(pts.contains(&(4, 4)));
         assert!(!pts.contains(&(13, 13)));
@@ -227,30 +317,40 @@ mod tests {
         let mut cw_image = Image::new(20, 20);
         let mut ccw_depth = Image::new(20, 20);
         let mut cw_depth = Image::new(20, 20);
-        let color = Color { r: 240, g: 10, b: 10, a: 255 };
 
         let p0 = Vec3i::new(3, 3, -1);
         let p1 = Vec3i::new(15, 4, -1);
         let p2 = Vec3i::new(6, 14, -1);
+        let v0 = Vec3f::new(0.0, 0.0, 0.0);
+        let v1 = Vec3f::new(1.0, 0.0, 0.0);
+        let v2 = Vec3f::new(0.0, 1.0, 0.0);
+        let n = Some(Vec3f::new(0.0, 0.0, 1.0));
+        let light = Vec3f::new(0.0, 0.0, 1.0);
+        let lit = Color { r: 255, g: 255, b: 255, a: 255 };
 
-        triangle(p0, p1, p2, &mut ccw_depth, &mut ccw_image, &color);
-        triangle(p0, p2, p1, &mut cw_depth, &mut cw_image, &color);
+        triangle(p0, p1, p2, v0, v1, v2, n, n, n, light, &mut ccw_depth, &mut ccw_image);
+        triangle(p0, p2, p1, v0, v2, v1, n, n, n, light, &mut cw_depth, &mut cw_image);
 
-        assert_eq!(colored_points(&ccw_image, color), colored_points(&cw_image, color));
+        assert_eq!(colored_points(&ccw_image, lit), colored_points(&cw_image, lit));
     }
 
     #[test]
     fn triangle_partially_out_of_bounds_still_rasterizes() {
         let mut image = Image::new(8, 8);
         let mut depth = Image::new(8, 8);
-        let color = Color { r: 50, g: 100, b: 200, a: 255 };
         let p0 = Vec3i::new(-4, 2, -1);
         let p1 = Vec3i::new(4, -3, -1);
         let p2 = Vec3i::new(5, 6, -1);
+        let v0 = Vec3f::new(0.0, 0.0, 0.0);
+        let v1 = Vec3f::new(1.0, 0.0, 0.0);
+        let v2 = Vec3f::new(0.0, 1.0, 0.0);
+        let n = Some(Vec3f::new(0.0, 0.0, 1.0));
+        let light = Vec3f::new(0.0, 0.0, 1.0);
+        let lit = Color { r: 255, g: 255, b: 255, a: 255 };
 
-        triangle(p0, p1, p2, &mut depth, &mut image, &color);
+        triangle(p0, p1, p2, v0, v1, v2, n, n, n, light, &mut depth, &mut image);
 
-        let pts = colored_points(&image, color);
+        let pts = colored_points(&image, lit);
         assert!(!pts.is_empty());
         assert!(pts.iter().all(|(x, y)| *x >= 0 && *x < 8 && *y >= 0 && *y < 8));
     }
