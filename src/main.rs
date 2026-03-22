@@ -15,20 +15,20 @@ fn viewport(p: Vec3f, w: usize, h: usize) -> Vec3i {
 }
 
 fn main() -> Result<(), String> {
-    let width = 100;
-    let height = 100;
+    let width = 800;
+    let height = 800;
 
     let mut image = image::Image::new(width, height);
     let mut depth_buffer = Image::new(width, height);
     for y in 0..height as i32 {
         for x in 0..width as i32 {
-            depth_buffer.set(x, y, Color { r: 255, g: 255, b: 255, a: 255 });
+            depth_buffer.set(x, y, Color { r: 0, g: 0, b: 0, a: 255 });
         }
     }
 
     let model = Model::load_obj("asserts\\african_head.obj")?;
 
-    let light_dir = Vec3f::new(-30.0,25.0, -55.0);
+    let light_dir = Vec3f::new(10.0,-5.0, 25.0);
     for i in 0..model.nfaces() {
         let face = model.face(i)?;
 

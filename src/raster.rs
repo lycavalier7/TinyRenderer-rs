@@ -126,7 +126,7 @@ pub fn triangle(
                 alpha <= 0 && beta <= 0 && gamma <= 0
             };
 
-            let cull = if z >= depth_buffer.get(p.x, p.y).r as i32 {
+            let cull = if z <= depth_buffer.get(p.x, p.y).r as i32 {
                 true
             } else {
                 false
@@ -293,9 +293,9 @@ mod tests {
     fn triangle_filled_draws_pixels_inside_bbox() {
         let mut image = Image::new(16, 16);
         let mut depth = Image::new(16, 16);
-        let p0 = Vec3i::new(2, 2, -1);
-        let p1 = Vec3i::new(12, 2, -1);
-        let p2 = Vec3i::new(4, 10, -1);
+        let p0 = Vec3i::new(2, 2, 1);
+        let p1 = Vec3i::new(12, 2, 1);
+        let p2 = Vec3i::new(4, 10, 1);
         let v0 = Vec3f::new(0.0, 0.0, 0.0);
         let v1 = Vec3f::new(1.0, 0.0, 0.0);
         let v2 = Vec3f::new(0.0, 1.0, 0.0);
@@ -318,9 +318,9 @@ mod tests {
         let mut ccw_depth = Image::new(20, 20);
         let mut cw_depth = Image::new(20, 20);
 
-        let p0 = Vec3i::new(3, 3, -1);
-        let p1 = Vec3i::new(15, 4, -1);
-        let p2 = Vec3i::new(6, 14, -1);
+        let p0 = Vec3i::new(3, 3, 1);
+        let p1 = Vec3i::new(15, 4, 1);
+        let p2 = Vec3i::new(6, 14, 1);
         let v0 = Vec3f::new(0.0, 0.0, 0.0);
         let v1 = Vec3f::new(1.0, 0.0, 0.0);
         let v2 = Vec3f::new(0.0, 1.0, 0.0);
@@ -338,9 +338,9 @@ mod tests {
     fn triangle_partially_out_of_bounds_still_rasterizes() {
         let mut image = Image::new(8, 8);
         let mut depth = Image::new(8, 8);
-        let p0 = Vec3i::new(-4, 2, -1);
-        let p1 = Vec3i::new(4, -3, -1);
-        let p2 = Vec3i::new(5, 6, -1);
+        let p0 = Vec3i::new(-4, 2, 1);
+        let p1 = Vec3i::new(4, -3, 1);
+        let p2 = Vec3i::new(5, 6, 1);
         let v0 = Vec3f::new(0.0, 0.0, 0.0);
         let v1 = Vec3f::new(1.0, 0.0, 0.0);
         let v2 = Vec3f::new(0.0, 1.0, 0.0);

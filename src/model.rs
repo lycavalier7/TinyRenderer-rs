@@ -141,7 +141,7 @@ impl Model {
                     let idx = vt.parse::<usize>().map_err(|e | e.to_string())?;
                     
                     if idx >= 1 && idx <= self.tex_coords.len() {
-                        Some(idx)
+                        Some(idx - 1)
                     }
                     else {
                         None
@@ -155,7 +155,7 @@ impl Model {
                     let idx = vn.parse::<usize>().map_err(|e | e.to_string())?;
 
                     if idx >= 1 && idx <= self.normals.len() {
-                        Some(idx)
+                        Some(idx - 1)
                     }
                     else {
                         None

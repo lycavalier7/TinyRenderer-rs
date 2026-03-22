@@ -34,13 +34,3 @@ cargo run
 ```bash
 cargo test
 ```
-
-## Output Preview
-
-Rendered result:
-
-![Flat Shading Output](output/output.png)
-
-Depth visualization:
-
-![Depth Output](output/depth_output.png)
