@@ -92,7 +92,7 @@ pub fn triangle(p0: Vec3i, p1: Vec3i, p2: Vec3i, depth_buffer: &mut Image, frame
 
             if inside && cull == false{
                 framebuffer.set(p.x, p.y, *color);
-                depth_buffer.set(p.x, p.y, Color{r: z as u8, g: 0, b: 0, a: 255});
+                depth_buffer.set(p.x, p.y, Color{r: z as u8, g: z as u8, b: z as u8, a: 255});
             }
         }
     }

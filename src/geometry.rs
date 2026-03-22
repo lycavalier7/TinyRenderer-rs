@@ -155,7 +155,7 @@ impl<T> Vec3<T>
 where
     T: Mul<Output = T> + Add<Output = T> + Copy + Clone,
 {
-    fn dot(self, rhs: Self) -> T {
+    pub fn dot(self, rhs: Self) -> T {
         self.x * rhs.x + self.y * rhs.y + self.z * rhs.z
     }
 }
@@ -164,7 +164,7 @@ impl<T> Vec3<T>
 where
     T: Mul<Output = T> + Sub<Output = T> + Copy + Clone,
 {
-    fn cross(self, rhs: Self) -> Self {
+    pub fn cross(self, rhs: Self) -> Self {
         Self::new(self.y * rhs.z - self.z * rhs.y,
                   self.z * rhs.x - self.x * rhs.z,
                   self.x * rhs.y - self.y * rhs.x)
@@ -176,7 +176,7 @@ impl Vec3<f32> {
         self.dot(self).sqrt()
     }
 
-    fn normalize(self) -> Self {
+    pub fn normalize(self) -> Self {
         let len = self.length();
         if len <= f32::EPSILON {
             self

@@ -87,6 +87,18 @@ impl Model {
 
         Ok(())
     }
+    
+    pub fn nfaces(&self) -> usize {
+        self.faces.len()
+    }
+    
+    pub fn face(&self, i: usize) -> Result<[usize; 3], String> {
+        self.faces.get(i).copied().ok_or_else(|| "Invalid face index".to_string())
+    }
+    
+    pub fn vert(&self, i: usize) -> Result<Vec3f, String> {
+        self.verts.get(i).copied().ok_or_else(|| "Invalid vertex index".to_string())
+    }
 }
 
 #[cfg(test)]
